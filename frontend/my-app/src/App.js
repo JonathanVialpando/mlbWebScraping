@@ -1,5 +1,7 @@
 import React, { useState } from 'react';
-import { Dropdown, Button, TableRow, TableHeaderCell, TableHeader, TableCell, TableBody, Table } from 'semantic-ui-react';
+import { Dropdown, Button, TableRow, TableHeaderCell, TableHeader, TableCell, TableBody, Table, 
+  MenuMenu, MenuItem, Input, Menu, Segment
+ } from 'semantic-ui-react';
 import axios from 'axios';
 import 'semantic-ui-css/semantic.min.css';
 import './App.css';
@@ -37,10 +39,73 @@ const teams = [
   { text: 'Washington Nationals', value: 'nationals' },
 ];
 
+function RosterPage({handleChange, fetchRoster, roster, error }) {
+  return (
+    <div>
+      <Dropdown
+        placeholder="Select Team"
+        fluid
+        selection
+        options={teams}
+        onChange={handleChange}
+      />
+      <Button onClick={fetchRoster}>Update Roster</Button>
+      <div>
+        {roster ? (
+          <Table singleLine>
+            <TableHeader>
+              <TableRow>
+                <TableHeaderCell>Name</TableHeaderCell>
+                <TableHeaderCell>B/T</TableHeaderCell>
+                <TableHeaderCell>Ht</TableHeaderCell>
+                <TableHeaderCell>Wt</TableHeaderCell>
+                <TableHeaderCell>DOB</TableHeaderCell>
+              </TableRow>
+            </TableHeader>
+            <TableBody>
+              {roster["data"].map((item, index) => (
+                <TableRow key={index}>
+                  <TableCell>{item.name}</TableCell>
+                  <TableCell>{item.bat_throw}</TableCell>
+                  <TableCell>{item.height}</TableCell>
+                  <TableCell>{item.weight}</TableCell>
+                  <TableCell>{item.birthday}</TableCell>
+                </TableRow>
+              ))}
+            </TableBody>
+          </Table>
+        ) : error ? (
+          <div>
+            <h1>Select a team and click "Update Roster" to see 40-Man roster.</h1>
+          </div>
+        ) : (
+          <p>Select a team and click "Update Roster" to see 40-Man roster.</p>
+        )}
+      </div>
+    </div>
+  );
+}
+
+function StandingsPage() {
+  return (
+    <div>
+      
+    </div>
+  );
+}
+
+
 function App() {
+
   const [team, setTeam] = useState(null);
   const [roster, setRoster] = useState(null);
   const [error, setError] = useState(null);
+  const [activeItem, setActiveItem] = useState('roster');
+
+  
+  const handleItemClick = (e, { name }) => {
+    setActiveItem(name);
+  };
 
   const handleChange = (event, data) => {
     setTeam(data.value);
@@ -58,52 +123,41 @@ function App() {
       }
     }
   }
-
-  return (
-    <div className="App">
-      <h1>Team Roster</h1>
-      <Dropdown
-        placeholder="Select Team"
-        fluid
-        selection
-        options={teams}
-        onChange={handleChange}
-      />
-      <Button onClick={fetchRoster}>Update Roster</Button>
-      <div>
-        {roster ? (
-          <Table singleLine>
-            <TableHeader>
-              <TableRow>
-                <TableHeaderCell>Team Name</TableHeaderCell>
-                <TableHeaderCell>B/T</TableHeaderCell>
-                <TableHeaderCell>Ht</TableHeaderCell>
-                <TableHeaderCell>Wt</TableHeaderCell>
-                <TableHeaderCell>DOB</TableHeaderCell>
-              </TableRow>
-            </TableHeader>
-            <TableBody>
-             
-              {roster["data"].map((item, index) => (
-                <TableRow>
-                  <TableCell key={index}>{item}</TableCell>
-                </TableRow>
-              ))}
-              
-              
-            </TableBody>
-          </Table>
-        ) : error ? (
-          <div>
-            <h1>Error:</h1>
-            <pre>{JSON.stringify(error, null, 2)}</pre>
-          </div>
-        ) : (
-          <h1>Loading...</h1>
-        )}
+  
+    return (
+      <div className="App">
+        <Menu attached="top" tabular>
+          <MenuItem
+            name="roster"
+            active={activeItem === 'roster'}
+            onClick={handleItemClick}
+          >
+            <h3>Roster</h3>
+          </MenuItem>
+          <MenuItem
+            name="standings"
+            active={activeItem === 'standings'}
+            onClick={handleItemClick}
+          >
+            <h3>Standings</h3>
+          </MenuItem>
+        </Menu>
+        <div>
+          {activeItem === 'roster' ? (
+            <RosterPage
+              team={team}
+              handleChange={handleChange}
+              fetchRoster={fetchRoster}
+              roster={roster}
+              error={error}
+            />
+          ) : activeItem === 'standings' ? (
+            <StandingsPage />
+          ) : null}
+        </div>
       </div>
-    </div>
-  );
-}
+    );
+  }
+  
 
 export default App;
