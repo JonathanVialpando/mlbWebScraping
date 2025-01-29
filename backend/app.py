@@ -1,5 +1,6 @@
 from flask import Flask
 import requests
+import re
 from bs4 import BeautifulSoup
 from flask_cors import CORS, cross_origin
 
@@ -42,13 +43,42 @@ def get_roster(team):
         return team_roster
 
 
-@app.route("/roster/<team>") 
+@app.route("/standings")
 def get_standings():
-    url = "https://www.mlb.com/standings/mlb?tableType=regularSeasonStandard"
-    print(url)
+    url = "https://www.mlb.com/standings/mlb"
 
     response = requests.get(url)
-    print(response)
+    soup = BeautifulSoup(response.text, 'html.parser')
+    table = soup.find('div', class_='StandingsTablestyle__StandingsTableWrapper-sc-1l6jbjt-0 kGMpgP').find('table')
 
     if response.status_code == 200:
-        soup = BeautifulSoup(response.content, 'html.parser')
+        standings_data = []  
+        for row in table.find_all('tr'):
+            team_link = row.find('a','StandingsCustomCellstyle__CellLinkWrapper-sc-1c94dhk-6 jnhStu') 
+            if team_link:
+                team_name = team_link.text.strip()
+
+                wins_cell = row.find_all('td', class_=lambda x: x and 'table-cellstyle__StyledTableCell' in x)[0]  
+                losses_cell = row.find_all('td', class_=lambda x: x and 'table-cellstyle__StyledTableCell' in x)[1] 
+                percent_cell = row.find_all('td', class_=lambda x: x and 'table-cellstyle__StyledTableCell' in x)[2]  
+                las10_cell = row.find_all('td', class_=lambda x: x and 'table-cellstyle__StyledTableCell' in x)[5]  
+                w_streak_cell = row.find_all('td', class_=lambda x: x and 'table-cellstyle__StyledTableCell' in x)[6]  
+
+
+                wins = wins_cell.find('span', attrs={'aria-hidden': 'true'}).text.strip() 
+                losses = losses_cell.find('span', attrs={'aria-hidden': 'true'}).text.strip() 
+                percent = percent_cell.find('span', attrs={'aria-hidden': 'true'}).text.strip() 
+                las10 = las10_cell.find('span', attrs={'aria-hidden': 'true'}).text.strip() 
+                w_streak = w_streak_cell.find('span', attrs={'aria-hidden': 'true'}).text.strip() 
+
+
+                standings_data.append({
+                    "team": team_name,
+                    "wins": wins,
+                    "losses": losses,
+                    "percent": percent,
+                    "las10": las10,
+                    "w_streak": w_streak
+                })
+
+    return standings_data

@@ -86,23 +86,51 @@ function RosterPage({handleChange, fetchRoster, roster, error }) {
   );
 }
 
-function StandingsPage() {
+function StandingsPage({fetchStandings, standings}) {
   return (
     <div>
-      
+      <Button onClick={fetchStandings}>Update Standings</Button>
+      <div>
+        {standings ? (
+          <Table singleLine>
+            <TableHeader>
+              <TableRow>
+                <TableHeaderCell>Team</TableHeaderCell>
+                <TableHeaderCell>Wins</TableHeaderCell>
+                <TableHeaderCell>Losses</TableHeaderCell>
+                <TableHeaderCell>Win%</TableHeaderCell>
+                <TableHeaderCell>Last 10</TableHeaderCell>
+                <TableHeaderCell>Win Streak</TableHeaderCell>
+              </TableRow>
+            </TableHeader>
+            <TableBody>
+              {standings["data"].map((item, index) => (
+                <TableRow key={index}>
+                  <TableCell>{item.team}</TableCell>
+                  <TableCell>{item.wins}</TableCell>
+                  <TableCell>{item.losses}</TableCell>
+                  <TableCell>{item.percent}</TableCell>
+                  <TableCell>{item.las10}</TableCell>
+                  <TableCell>{item.w_streak}</TableCell>
+                </TableRow>
+              ))}
+            </TableBody>
+          </Table>
+        ) : (
+          <p>Click "Update Standings" to see the current Standings.</p>
+        )}
+      </div>
     </div>
   );
 }
 
-
 function App() {
-
   const [team, setTeam] = useState(null);
   const [roster, setRoster] = useState(null);
+  const [standings, setStandings] = useState(null);  // FIXED
   const [error, setError] = useState(null);
   const [activeItem, setActiveItem] = useState('roster');
 
-  
   const handleItemClick = (e, { name }) => {
     setActiveItem(name);
   };
@@ -122,42 +150,58 @@ function App() {
         setError(error);
       }
     }
-  }
-  
-    return (
-      <div className="App">
-        <Menu attached="top" tabular>
-          <MenuItem
-            name="roster"
-            active={activeItem === 'roster'}
-            onClick={handleItemClick}
-          >
-            <h3>Roster</h3>
-          </MenuItem>
-          <MenuItem
-            name="standings"
-            active={activeItem === 'standings'}
-            onClick={handleItemClick}
-          >
-            <h3>Standings</h3>
-          </MenuItem>
-        </Menu>
-        <div>
-          {activeItem === 'roster' ? (
-            <RosterPage
-              team={team}
-              handleChange={handleChange}
-              fetchRoster={fetchRoster}
-              roster={roster}
-              error={error}
-            />
-          ) : activeItem === 'standings' ? (
-            <StandingsPage />
-          ) : null}
-        </div>
+  };
+
+  const fetchStandings = async () => {
+    try {
+      const url = `http://127.0.0.1:8080/standings`;
+      console.log(`Fetching from URL: ${url}`);
+      const response = await axios.get(url);
+      console.log('Fetched Standings:', response);
+      setStandings(response);  // FIXED
+    } catch (error) {
+      setError(error);
+    }
+  };
+
+  return (
+    <div className="App">
+      <Menu attached="top" tabular>
+        <MenuItem
+          name="roster"
+          active={activeItem === 'roster'}
+          onClick={handleItemClick}
+        >
+          <h3>Roster</h3>
+        </MenuItem>
+        <MenuItem
+          name="standings"
+          active={activeItem === 'standings'}
+          onClick={handleItemClick}
+        >
+          <h3>Standings</h3>
+        </MenuItem>
+      </Menu>
+      <div>
+        {activeItem === 'roster' ? (
+          <RosterPage
+            team={team}
+            handleChange={handleChange}
+            fetchRoster={fetchRoster}
+            roster={roster}
+            error={error}
+          />
+        ) : activeItem === 'standings' ? (
+          <StandingsPage 
+            fetchStandings={fetchStandings} 
+            standings={standings} 
+          />
+        ) : null}
       </div>
-    );
-  }
-  
+    </div>
+  );
+}
+
+
 
 export default App;
