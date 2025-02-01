@@ -46,7 +46,7 @@ def get_roster(team):
 @app.route("/standings")
 def get_standings():
     url = "https://www.mlb.com/standings/mlb"
-
+    
     response = requests.get(url)
     soup = BeautifulSoup(response.text, 'html.parser')
     table = soup.find('div', class_='StandingsTablestyle__StandingsTableWrapper-sc-1l6jbjt-0 kGMpgP').find('table')

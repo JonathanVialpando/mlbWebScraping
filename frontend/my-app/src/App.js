@@ -1,11 +1,12 @@
 import React, { useState } from 'react';
-import { Dropdown, Button, TableRow, TableHeaderCell, TableHeader, TableCell, TableBody, Table, 
-  MenuMenu, MenuItem, Input, Menu, Segment
- } from 'semantic-ui-react';
+import { Dropdown, Button, TableRow, TableHeaderCell, 
+  TableHeader, TableCell, TableBody, Table, MenuItem, Menu
+} from 'semantic-ui-react';
 import axios from 'axios';
 import 'semantic-ui-css/semantic.min.css';
 import './App.css';
 
+// List of teams for drop down menu
 const teams = [
   { text: 'Arizona Diamondbacks', value: 'dbacks' },
   { text: 'Athletics', value: 'athletics' },
@@ -39,7 +40,8 @@ const teams = [
   { text: 'Washington Nationals', value: 'nationals' },
 ];
 
-function RosterPage({handleChange, fetchRoster, roster, error }) {
+// RosterPage function which handles displaying the roster data
+function RosterPage({ handleChange, fetchRoster, roster, error }) {
   return (
     <div>
       <Dropdown
@@ -50,6 +52,7 @@ function RosterPage({handleChange, fetchRoster, roster, error }) {
         onChange={handleChange}
       />
       <Button onClick={fetchRoster}>Update Roster</Button>
+
       <div>
         {roster ? (
           <Table singleLine>
@@ -86,10 +89,12 @@ function RosterPage({handleChange, fetchRoster, roster, error }) {
   );
 }
 
-function StandingsPage({fetchStandings, standings}) {
+// StandingsPage function which handles displaying the standings data
+function StandingsPage({ fetchStandings, standings }) {
   return (
     <div>
       <Button onClick={fetchStandings}>Update Standings</Button>
+
       <div>
         {standings ? (
           <Table singleLine>
@@ -124,21 +129,25 @@ function StandingsPage({fetchStandings, standings}) {
   );
 }
 
+// Main App component that manages the application states and navigation 
 function App() {
   const [team, setTeam] = useState(null);
   const [roster, setRoster] = useState(null);
-  const [standings, setStandings] = useState(null);  // FIXED
+  const [standings, setStandings] = useState(null);
   const [error, setError] = useState(null);
   const [activeItem, setActiveItem] = useState('roster');
 
+  // Handling the switching between different pages
   const handleItemClick = (e, { name }) => {
     setActiveItem(name);
   };
 
+  // Handling the dropdown selection changes
   const handleChange = (event, data) => {
     setTeam(data.value);
   };
 
+  // Fetches the roster data for the selected team from API
   const fetchRoster = async () => {
     if (team !== 0) {
       try {
@@ -152,13 +161,14 @@ function App() {
     }
   };
 
+  // Fetches the standing data from API
   const fetchStandings = async () => {
     try {
       const url = `http://127.0.0.1:8080/standings`;
       console.log(`Fetching from URL: ${url}`);
       const response = await axios.get(url);
       console.log('Fetched Standings:', response);
-      setStandings(response);  // FIXED
+      setStandings(response);
     } catch (error) {
       setError(error);
     }
@@ -174,6 +184,7 @@ function App() {
         >
           <h3>Roster</h3>
         </MenuItem>
+
         <MenuItem
           name="standings"
           active={activeItem === 'standings'}
@@ -181,7 +192,9 @@ function App() {
         >
           <h3>Standings</h3>
         </MenuItem>
+
       </Menu>
+
       <div>
         {activeItem === 'roster' ? (
           <RosterPage
@@ -192,16 +205,14 @@ function App() {
             error={error}
           />
         ) : activeItem === 'standings' ? (
-          <StandingsPage 
-            fetchStandings={fetchStandings} 
-            standings={standings} 
+          <StandingsPage
+            fetchStandings={fetchStandings}
+            standings={standings}
           />
         ) : null}
       </div>
     </div>
   );
 }
-
-
 
 export default App;
